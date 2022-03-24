@@ -63,6 +63,8 @@ Desktop/
 *.ctr
 .ctr.meta
 *.iso
+# no png's in the project just in case. use jpg if it's non trivial.
+*.png
 .iso.meta
 Assets/ctr_data/
 Assets/lev_data/
