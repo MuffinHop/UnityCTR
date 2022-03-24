@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Test.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/InLevelUI.unity
+    guid: ff3325abf8fbe604795f1c3fbf264aaf
+  - enabled: 1
+    path: Assets/Scenes/Loading.unity
+    guid: 3aa39a0bd27eabe41a186bf1677fe65e
+  - enabled: 1
+    path: Assets/Scenes/Track Selector.unity
+    guid: fee893fd5a50b614194fc35ef54f42f1
+  - enabled: 1
+    path: Assets/Scenes/ISO Extractor.unity
+    guid: 94150e9d89e2d5d47b8f5ad1c2efa5cf
+  m_configObjects:
+    com.unity.input.settings: {fileID: 11400000, guid: a6f5c0ffeb8523f41aa07181561a34ad, type: 2}
