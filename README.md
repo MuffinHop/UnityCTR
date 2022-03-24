@@ -17,7 +17,7 @@ Our objectives are:
 - Research & education for programmers, speedrunners, scientists and historians. 
 - Bug fix major issues encountered in the game like variable overflow and crashes like caused by wrong warp battle mode glitch.
 - Better accessibility.
-- x86-64 and ARM native execution, with high performance. CTR shouldn't emulated, interpreted, or transpiled.
+- x86-64 and ARM native execution, with high performance. CTR shouldn't be emulated, interpreted, or transpiled.
 - Performance should be so good that the project can work on any desktop computer released in the past 15 years with better performance than on a PS2.
 
 
