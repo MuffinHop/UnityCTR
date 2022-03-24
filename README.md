@@ -10,7 +10,7 @@ https://github.com/CTR-tools/CTR-tools
 
 . 
 ## Project Description
-Achievement of this repository is to port CTR to a Unity project which can be run on platforms like Windows, Linux and MacOS. UnityCTR is written in C# and HLSL. Project uses a the direct binarydisassembly and decompilation of the original game to determine its behavior, the project doesn't have any access to the original source code so the project has to be done by reverse-engineering the game. Project will not and can not host any of the original game assets, a prior copy of the game is required to extract the assets and play the game.
+Achievement of this repository is to port core CTR behaviour to a Unity project which can be run on platforms like Windows, Linux and MacOS via reverse-engineering. UnityCTR is written in C# and HLSL. Project uses a the direct binarydisassembly and decompilation of the original game to determine its behavior, the project doesn't have any access to the original source code so the project has to be done by reverse-engineering the game. Project will not and can not host any of the original game assets, a prior copy of the game is required to extract the assets and play the game.
 
 Our objectives are:
 - Achieve the same feel with high accuracy.
