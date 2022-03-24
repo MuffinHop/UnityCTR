@@ -89,6 +89,12 @@ namespace OGData.Kart
         public QuadBlock LastValidQuadBlockTouched;
 
         public Event[] TerrainEvent = new Event[2];
+        // 0x358
+        // is it ice, gravel, or what?
+        short TerrainMeta1;
+        // 0x35C
+        short TterrainMeta2;
+
         
         public sbyte[] Fill16 = new sbyte[0x16];
 
@@ -107,7 +113,10 @@ namespace OGData.Kart
         public short UnknownFlagSet1;
         public short UnknownFlagSet2;
         public Vector3i SpeedVector;
-        public char[] Fill2E = new char[0x2E];
+        public Vector3s UnkVector; // 0x3AC
+        public int UnkSpinning; // 0x3B4
+        public char[] Fill2E = new char[0x22]; // 0x3B8
+
         public short MultDrift;
         public short TurboMeterLeft;
         public ushort OutsideTurboTimer;
@@ -152,7 +161,7 @@ namespace OGData.Kart
         public sbyte CharacterTurn; // 0x43A CHARACTER
         public sbyte ReverseTurningSpeed; // 0x43B
         public short TurnSpeedDecreaseStat; // 0x43C
-        public short turningInputResponseStat; // 0x43E
+        public short TurningInputResponseStat; // 0x43E
         public sbyte[] MoreConstsPreTurbo = new sbyte[0x36]; // 0x440
         public sbyte TurboMaxRoom; // 0x476 point where turbo meter is empty
         public sbyte ConstTurboLowRoomWarning; // 0x477 point where turbo meter goes red
@@ -319,12 +328,90 @@ namespace OGData.Kart
             cameraAngleAbsolute = RotationInterpolation(RotationPrevious.W,8,shiftCamAngle);
             RotationPrevious.W = (short)cameraAngleAbsolute;
             
-            int interpolationBySpeed = RotationInterpolation(cameraAngleAbsolute,RotationPrevious.W  * elapsedTimeInMS >> 5,0);
+            int futureAngle = RotationInterpolation(cameraAngleAbsolute,RotationPrevious.W  * elapsedTimeInMS >> 5,0);
+            
             uint actionsFlagSet = ActionsFlagSet;
+            short turnSign = FillAtwo[0];
+
+            RotationCurrent.W = (short)futureAngle;
+
+            int speedApprox = SpeedApprox;
+            int simpleTurnState256 = SimpleTurnState * 0x100;
+            if (speedApprox < 1) {
+                if (UnknownFlagSet1 < 0) {
+                    turnSign = -1;
+                    FillAtwo[0] = -1;
+                }
+                if (-1 < speedApprox) {
+                    if (-1 < UnknownFlagSet1) {
+                        turnSign = 1;
+                        FillAtwo[0] = 1;
+                    }
+                }
+            }
+            else {
+                if (-1 < UnknownFlagSet1) {
+                    turnSign = 1;
+                    FillAtwo[0] = 1;
+                }
+            }
             
-            /*WORK IN PROGRESS*/
+            if (turnSign < 0) {
+                simpleTurnState256 = SimpleTurnState * -0x100;
+                actionsFlagSet = actionsFlagSet ^ 0x10;
+            }
+            if (speedApprox < 0) {
+                speedApprox = -speedApprox;
+            }
             
             
+            if (
+                ((actionsFlagSet & 1) != 0) &&
+                // Kart is not on any turbo pad.
+                ((StepFlagSet & 3) == 0)
+            )
+            {
+                // Map value from [oldMin, oldMax] to [newMin, newMax]
+                // inverting newMin and newMax will give an inverse range mapping
+                simpleTurnState256 = Misc.MapToRange(speedApprox,0x10,0x300,0,simpleTurnState256);
+            }
+            int terrainMeta1 = TerrainMeta1;
+            int unkSpinning = UnkSpinning;
+            if (simpleTurnState256 == 0)
+            {
+                // Interpolate rotation by speed
+                turnSign = (short)RotationInterpolation(
+                    unkSpinning,
+                    (TurningInputResponseStat + (int)TurnConst * 0x32) * (terrainMeta1 + 0x28) >> 8,
+                    0);
+            }
+            else {
+                bool isTurnSignNegative = simpleTurnState256 < 0;
+                if (isTurnSignNegative) {
+                    simpleTurnState256 = -simpleTurnState256;
+                    unkSpinning = -unkSpinning;
+                }
+                short unkSpinningS16 = (short)unkSpinning;
+                if (unkSpinning < simpleTurnState256) {
+                    unkSpinning = unkSpinning + ((TurningInputResponseStat + TurnConst * 100) * (terrainMeta1 + 0x28) >> 8);
+                    unkSpinningS16 = (short)unkSpinning;
+                    if (simpleTurnState256 < unkSpinning) {
+                        unkSpinningS16 = (short)simpleTurnState256;
+                    }
+                }
+                else {
+                    if (simpleTurnState256 < unkSpinning) {
+                        unkSpinning = unkSpinning - ((TurningInputResponseStat + TurnConst * 0x32) * (terrainMeta1 + 0x28) >> 8);
+                        unkSpinningS16 = (short)unkSpinning;
+                        if (unkSpinning < simpleTurnState256) {
+                            unkSpinningS16 = (short)simpleTurnState256;
+                        }
+                    }
+                }
+                if (isTurnSignNegative) {
+                    unkSpinningS16 = (short)-unkSpinningS16;
+                }
+            }
         }
         
         
