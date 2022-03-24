@@ -58,6 +58,7 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+frame_data.txt
 Desktop/
 *.ctr
 .ctr.meta
