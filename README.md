@@ -22,5 +22,6 @@ Our objectives are:
 
 
 ## Notable difference
-All Threads are turned into Events, this shouldn't affect behaviour but changes how code is approached.
-Levels are loaded in their highest LOD and collisions are handled with the Unity rigidbody system for best performance.
+- All Threads are turned into Events, this shouldn't affect behaviour but changes how code is approached.
+- Levels are loaded in their highest LOD
+- Collisions are detected with the Unity rigidbody system for best performance.
