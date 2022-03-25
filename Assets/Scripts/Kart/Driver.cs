@@ -114,7 +114,7 @@ namespace OGData.Kart
         public short UnknownFlagSet2;
         public Vector3i SpeedVector;
         public Vector3s UnkVector; // 0x3AC
-        public int UnkSpinning; // 0x3B4
+        public int TurningAcceleration; // 0x3B4
         public char[] Fill2E = new char[0x22]; // 0x3B8
 
         public short MultDrift;
@@ -124,7 +124,9 @@ namespace OGData.Kart
         public short Reserves;
         public short MaxGroundSpeed;
         public short NumFramesSpentSteering;
-        public short[] FillAtwo = new short[0x4];
+        public short TurnSign; // 0x3E8
+        public short PreviousFrameMultDrift; // 0x3EA
+        public short TimeUntilDriftSpinout;
         public short Jump_TenBuffer; // ten frame jump buffer
         public short Jump_CooldownMS; // so you can't spam jump too fast
         public short jump_CoyoteTimerMS; // the speedrunners call this "coyote jump"
@@ -331,7 +333,7 @@ namespace OGData.Kart
             int futureAngle = RotationInterpolation(cameraAngleAbsolute,RotationPrevious.W  * elapsedTimeInMS >> 5,0);
             
             uint actionsFlagSet = ActionsFlagSet;
-            short turnSign = FillAtwo[0];
+            short turnSign = TurnSign;
 
             RotationCurrent.W = (short)futureAngle;
 
@@ -340,19 +342,19 @@ namespace OGData.Kart
             if (speedApprox < 1) {
                 if (UnknownFlagSet1 < 0) {
                     turnSign = -1;
-                    FillAtwo[0] = -1;
+                    TurnSign = -1;
                 }
                 if (-1 < speedApprox) {
                     if (-1 < UnknownFlagSet1) {
                         turnSign = 1;
-                        FillAtwo[0] = 1;
+                        TurnSign = 1;
                     }
                 }
             }
             else {
                 if (-1 < UnknownFlagSet1) {
                     turnSign = 1;
-                    FillAtwo[0] = 1;
+                    TurnSign = 1;
                 }
             }
             
@@ -376,12 +378,13 @@ namespace OGData.Kart
                 simpleTurnState256 = Misc.MapToRange(speedApprox,0x10,0x300,0,simpleTurnState256);
             }
             int terrainMeta1 = TerrainMeta1;
-            int unkSpinning = UnkSpinning;
+            int turningAcceleration = TurningAcceleration;
+            short turningAccelerationS16 = (short)turningAcceleration;
             if (simpleTurnState256 == 0)
             {
                 // Interpolate rotation by speed
                 turnSign = (short)RotationInterpolation(
-                    unkSpinning,
+                    turningAcceleration,
                     (TurningInputResponseStat + (int)TurnConst * 0x32) * (terrainMeta1 + 0x28) >> 8,
                     0);
             }
@@ -389,30 +392,52 @@ namespace OGData.Kart
                 bool isTurnSignNegative = simpleTurnState256 < 0;
                 if (isTurnSignNegative) {
                     simpleTurnState256 = -simpleTurnState256;
-                    unkSpinning = -unkSpinning;
+                    turningAcceleration = -turningAcceleration;
                 }
-                short unkSpinningS16 = (short)unkSpinning;
-                if (unkSpinning < simpleTurnState256) {
-                    unkSpinning = unkSpinning + ((TurningInputResponseStat + TurnConst * 100) * (terrainMeta1 + 0x28) >> 8);
-                    unkSpinningS16 = (short)unkSpinning;
-                    if (simpleTurnState256 < unkSpinning) {
-                        unkSpinningS16 = (short)simpleTurnState256;
+                turningAccelerationS16 = (short)turningAcceleration;
+                if (turningAcceleration < simpleTurnState256) {
+                    turningAcceleration = turningAcceleration + ((TurningInputResponseStat + TurnConst * 100) * (terrainMeta1 + 0x28) >> 8); // 100%
+                    turningAccelerationS16 = (short)turningAcceleration;
+                    if (simpleTurnState256 < turningAcceleration) {
+                        turningAccelerationS16 = (short)simpleTurnState256;
                     }
                 }
                 else {
-                    if (simpleTurnState256 < unkSpinning) {
-                        unkSpinning = unkSpinning - ((TurningInputResponseStat + TurnConst * 0x32) * (terrainMeta1 + 0x28) >> 8);
-                        unkSpinningS16 = (short)unkSpinning;
-                        if (unkSpinning < simpleTurnState256) {
-                            unkSpinningS16 = (short)simpleTurnState256;
+                    if (simpleTurnState256 < turningAcceleration) {
+                        turningAcceleration = turningAcceleration - ((TurningInputResponseStat + TurnConst * 0x32) * (terrainMeta1 + 0x28) >> 8); // 50%
+                        turningAccelerationS16 = (short)turningAcceleration;
+                        if (turningAcceleration < simpleTurnState256) {
+                            turningAccelerationS16 = (short)simpleTurnState256;
                         }
                     }
                 }
                 if (isTurnSignNegative) {
-                    unkSpinningS16 = (short)-unkSpinningS16;
+                    turningAccelerationS16 = (short)-turningAccelerationS16;
                 }
             }
+            // timeUntilDriftSpinout spin out timer.
+            int timeUntilDriftSpinout = TimeUntilDriftSpinout;
+            turningAcceleration = turningAccelerationS16;
+            TurningAcceleration = turningAcceleration;
+            int deltaRotation = 0;
+            if (timeUntilDriftSpinout != 0) {
+                int deltaTime = (timeUntilDriftSpinout - elapsedTimeInMS);
+
+                // Map value from [oldMin, oldMax] to [newMin, newMax]
+                // inverting newMin and newMax will give an inverse range mapping
+                deltaRotation = Misc.MapToRange(timeUntilDriftSpinout,0,0x140,0,PreviousFrameMultDrift);
+                turningAcceleration = turningAcceleration + deltaRotation;
+                if (deltaTime < 0) {
+                    deltaTime = 0;
+                }
+                TimeUntilDriftSpinout = (short)deltaTime;
+            }
+            // iVar11 = character_Speed << 10;
+            int characterMagnitude = CharacterSpeed << 0x10;
+            // iVar6 = iVar11 >> 10; back to, kind of unoptimized hahaha
+            int characterSpeedStat = characterMagnitude >> 0x10;
         }
+        
         
         
         

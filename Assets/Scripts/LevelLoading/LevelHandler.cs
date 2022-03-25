@@ -9,6 +9,7 @@ using System.Threading;
 using CTRFramework;
 using CTRFramework.Shared;
 using CTRFramework.Vram;
+using OGdata.MetaPhys;
 using TMPro;
 using UI;
 using UnityEditor;
@@ -68,6 +69,7 @@ namespace OpenCTR.Level
         private int _maxTrackPosition;
         public void Start()
         {
+            GetMetaPhysData.LoadMetaPhys();
             Application.targetFrameRate = 60;
             _sharedLevelGameObjects = new Dictionary<string, GameObject>();
             name = Path.GetFileNameWithoutExtension(filename);
