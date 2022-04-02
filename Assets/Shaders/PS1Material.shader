@@ -9,14 +9,6 @@
         _Tex5 ("Texture", 2D) = "white" {}
         _Tex6 ("Texture", 2D) = "white" {}
         _Tex7 ("Texture", 2D) = "white" {}
-        /*_Tex8 ("Texture", 2D) = "white" {}
-        _Tex9 ("Texture", 2D) = "white" {}
-        _Tex10 ("Texture", 2D) = "white" {}
-        _Tex11 ("Texture", 2D) = "white" {}
-        _Tex12 ("Texture", 2D) = "white" {}
-        _Tex13 ("Texture", 2D) = "white" {}
-        _Tex14 ("Texture", 2D) = "white" {}
-        _Tex15 ("Texture", 2D) = "white" {}*/
         _flipRotate0 ("FlipRotate0", Int) = 0 
         _flipRotate1 ("FlipRotate1", Int) = 0 
         _flipRotate2 ("FlipRotate2", Int) = 0 
@@ -270,21 +262,22 @@ Cull Off
         fixed4 frag (v2f i, fixed facing : VFACE) : SV_Target { 
             //return fixed4(i.uv.x, i.uv.y, 0.0, 1.0);
             
-            half4 col = half4(0.0,0.0,0.0,0.0);
-                if(i.uv.y>1.0) {
-                    if(i.uv.x<1.0) {
-                        col += i.color * sampleTex2( i.uv, i.dist);
-                    } else {
-                        col += i.color * sampleTex3( i.uv, i.dist); 
-                    }
+            half4 col = i.color;
+            col.rgb = pow(col.rgb,1.0/2.1);
+            if(i.uv.y>1.0) {
+                if(i.uv.x<1.0) {
+                    col = col * sampleTex2( i.uv, i.dist);
                 } else {
-                    if(i.uv.x<1.0) {
-                        col = i.color * sampleTex0( i.uv, i.dist); 
-                    } else {
-                        col = i.color * sampleTex1( i.uv, i.dist);
-                    }
+                    col = col * sampleTex3( i.uv, i.dist);
                 }
-            col.a = 1.0 - col.a;
+            } else {
+                if(i.uv.x<1.0) {
+                    col = col * sampleTex0( i.uv, i.dist);
+                } else {
+                    col = col * sampleTex1( i.uv, i.dist);
+                }
+            }
+            col.a = col.a - _Transparency;
             
             if(_invisibleTriggers==1.0 ){
                 discard;
@@ -293,10 +286,6 @@ Cull Off
                     discard;
                 }
             }
-            if(col.a > 0.99) {
-                discard;
-            }
-            col.a = 1.0 - col.a - _Transparency;
             if(_blendingMode == Additive)
             {
                 col.a = 0.5;

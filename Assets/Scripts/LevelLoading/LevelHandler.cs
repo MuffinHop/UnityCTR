@@ -67,9 +67,10 @@ namespace OpenCTR.Level
         private Dictionary<string, Texture2D> lowTextures;
         private Dictionary<string, Texture2D> highTextures;
         private int _maxTrackPosition;
+        [SerializeField] private List<MetaPhys>[] characterMetaPhysics;
         public void Start()
         {
-            GetMetaPhysData.LoadMetaPhys();
+            characterMetaPhysics = GetMetaPhysData.LoadMetaPhys();
             Application.targetFrameRate = 60;
             _sharedLevelGameObjects = new Dictionary<string, GameObject>();
             name = Path.GetFileNameWithoutExtension(filename);
@@ -456,6 +457,7 @@ namespace OpenCTR.Level
             List<Vector3> vertices = new List<Vector3>();
             List<Color> colors = new List<Color>();
             List<int> triangles = new List<int>();
+            Vector3 skyboxOffset = new Vector3(0f, -32f, 0f);
             if (sb==null || sb.Faces.Count == 0) return;
             for (int i = 0; i < sb.Faces.Count; i++)
             {
@@ -477,9 +479,9 @@ namespace OpenCTR.Level
                     sb.Vertices[(int)sb.Faces[i].Z].Color.Z / 255f,
                     sb.Vertices[(int)sb.Faces[i].Z].Color.W / 255f
                 );
-                vertices.Add(sb.Vertices[(int)sb.Faces[i].X].Position * 32f);
-                vertices.Add(sb.Vertices[(int)sb.Faces[i].Y].Position * 32f);
-                vertices.Add(sb.Vertices[(int)sb.Faces[i].Z].Position * 32f);
+                vertices.Add(sb.Vertices[(int)sb.Faces[i].X].Position * 32f + skyboxOffset);
+                vertices.Add(sb.Vertices[(int)sb.Faces[i].Y].Position * 32f + skyboxOffset);
+                vertices.Add(sb.Vertices[(int)sb.Faces[i].Z].Position * 32f + skyboxOffset);
                 colors.Add(colora);
                 colors.Add(colorb);
                 colors.Add(colorc);

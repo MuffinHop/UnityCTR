@@ -436,6 +436,7 @@ namespace OGData.Kart
             int characterMagnitude = CharacterSpeed << 0x10;
             // iVar6 = iVar11 >> 10; back to, kind of unoptimized hahaha
             int characterSpeedStat = characterMagnitude >> 0x10;
+            
         }
         
         

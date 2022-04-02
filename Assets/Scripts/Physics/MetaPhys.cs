@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace OGdata.MetaPhys
 {
-    public class MetaPhys
+    public class MetaPhys : ScriptableObject
     {
         public long Address;
         public int Index;
